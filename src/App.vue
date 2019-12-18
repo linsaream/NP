@@ -13,13 +13,14 @@
 
 <script>
 
-
+import {placeDict} from './libs/placeDict';
+import {personDict} from './libs/personDict';
 export default {
   name: 'app',
   data(){
     return {
-      placeDict: ["សាលារៀន", "មន្ទីរ", "ក្រសួង"],
-      personDict: ["លោក", "លោកស្រី", "ឯកឧត្តម"],
+      placeDict: placeDict,
+      personDict: personDict,
       data: ["លោក ប៉ែនសុធី", "គុយទាវឆា", "លោកស្រី ពិនលក្ខណា", "មន្ទីរ សេដ្ឋកិច្ច", "ក្រសួង សាធារណការ", "សត្វស្វា"],
       foundResult: [{style: '', text: ''}],
       isFound: false,
