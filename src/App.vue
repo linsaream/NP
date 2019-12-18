@@ -21,26 +21,26 @@ export default {
     return {
       placeDict: placeDict,
       personDict: personDict,
-      data: ["លោក ប៉ែនសុធី", "គុយទាវឆា", "លោកស្រី ពិនលក្ខណា", "មន្ទីរ សេដ្ឋកិច្ច", "ក្រសួង សាធារណការ", "សត្វស្វា"],
+      data: ["លោក", "ប៉ែនសុធី", "គុយទាវឆា", "លោកស្រី ពិនលក្ខណា", "មន្ទីរ សេដ្ឋកិច្ច", "ក្រសួង សាធារណការ", "សត្វស្វា"],
       foundResult: [{style: '', text: ''}],
       isFound: false,
     }
   },
   methods: {
     matchDataWithDict(){
-      this.data.map(o => {
+      this.data.map((o, index) => { //data from user separate from " "
         
-        this.placeDict.map(p => {
-          if(o.split(' ')[0] ===  p) {
-            this.foundResult.push({bg: "yellow", text: o});
+        this.placeDict.map(p => {//loop place
+          if(o ===  p) {
+            this.foundResult.push({bg: "yellow", text: this.data[index+1]});
             this.isFound=true;
           }
         });
         
 
         this.personDict.map(p => {
-          if(o.split(' ')[0] ===  p) {
-            this.foundResult.push({bg: "green", text: o});
+          if(o ===  p) {
+            this.foundResult.push({bg: "green", text: this.data[index+1]});
             this.isFound=true;
           }
         });
