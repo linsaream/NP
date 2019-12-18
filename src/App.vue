@@ -1,28 +1,60 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div>
+
+    <h3>Content</h3>
+    <div><span v-for="item in data" :key="item" :style="{margin: '5px'}">{{item}}</span></div>
+    <button @click="matchDataWithDict">Match with dictionary</button>
+
+    <h3>Result</h3>
+
+    <div><span v-for="item in foundResult" :key="item.text" :style="{backgroundColor: item.bg, margin: '5px'}">{{item.text}}</span></div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+
 
 export default {
   name: 'app',
-  components: {
-    HelloWorld
+  data(){
+    return {
+      placeDict: ["សាលារៀន", "មន្ទីរ", "ក្រសួង"],
+      personDict: ["លោក", "លោកស្រី", "ឯកឧត្តម"],
+      data: ["លោក ប៉ែនសុធី", "គុយទាវឆា", "លោកស្រី ពិនលក្ខណា", "មន្ទីរ សេដ្ឋកិច្ច", "ក្រសួង សាធារណការ", "សត្វស្វា"],
+      foundResult: [{style: '', text: ''}],
+      isFound: false,
+    }
+  },
+  methods: {
+    matchDataWithDict(){
+      this.data.map(o => {
+        
+        this.placeDict.map(p => {
+          if(o.split(' ')[0] ===  p) {
+            this.foundResult.push({bg: "yellow", text: o});
+            this.isFound=true;
+          }
+        });
+        
+
+        this.personDict.map(p => {
+          if(o.split(' ')[0] ===  p) {
+            this.foundResult.push({bg: "green", text: o});
+            this.isFound=true;
+          }
+        });
+
+        if(!this.isFound){
+          this.foundResult.push({bg: "", text: o});
+        }
+        this.isFound = false;
+      });
+      
+    }
   }
 }
 </script>
 
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+
 </style>
