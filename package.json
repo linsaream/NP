@@ -9,9 +9,12 @@
   },
   "dependencies": {
     "core-js": "^3.4.3",
-    "vue": "^2.6.10"
+    "material-design-icons-iconfont": "^5.0.1",
+    "vue": "^2.6.10",
+    "vuetify": "^2.1.15"
   },
   "devDependencies": {
+    "@mdi/font": "^4.7.95",
     "@vue/cli-plugin-babel": "^4.1.0",
     "@vue/cli-plugin-eslint": "^4.1.0",
     "@vue/cli-service": "^4.1.0",
@@ -29,7 +32,9 @@
       "plugin:vue/essential",
       "eslint:recommended"
     ],
-    "rules": {},
+    "rules": {
+      "strict": "off"
+    },
     "parserOptions": {
       "parser": "babel-eslint"
     }
