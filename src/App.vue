@@ -86,10 +86,13 @@
 </template>
 
 <script>
+
 /* eslint-disable */
 import { placeDict } from "./libs/placeDict";
 import { personDict } from "./libs/personDict";
 import { toKhNumber } from "./libs/toKh";
+
+import {textS} from './libs/texts'
 export default {
   name: "app",
   data() {
