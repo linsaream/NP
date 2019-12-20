@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import App from './App.vue'
+import App from './App.vue'//Root application
 Vue.config.productionTip = false
 //vuetify
 import Vuetify from 'vuetify';
@@ -21,10 +21,10 @@ const color ={
   error: "#ae0725",
   accent: '#3497db',
 };
-Vue.use(Vuetify);
+Vue.use(Vuetify);//register applicaton with vuetify module /package
 const vuetify = new Vuetify({
   theme: {
-    dark: false,
+    dark: true,
     themes: {
       light: color,
       dark: color,
@@ -37,4 +37,4 @@ const vuetify = new Vuetify({
 
 new Vue({
   vuetify, ...App
-}).$mount('#app')
+}).$mount('#app') //disaply vue component to html

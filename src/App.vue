@@ -6,7 +6,7 @@
           <v-spacer></v-spacer>
           <span>LIN SAREAM</span>
         </v-system-bar>
-        <v-toolbar color="primary" dark>
+        <v-toolbar color="success" dark>
           <v-app-bar-nav-icon></v-app-bar-nav-icon>
           <v-toolbar-title class="headline toolbar-title">ប្រព័ន្ធស្វែងរកឈ្មោះមនុស្ស និងទីកន្លែង</v-toolbar-title>
         </v-toolbar>
@@ -88,6 +88,7 @@
 <script>
 
 /* eslint-disable */
+import {article} from "./libs/article";
 import { placeDict } from "./libs/placeDict";
 import { personDict } from "./libs/personDict";
 import { toKhNumber } from "./libs/toKh";
@@ -95,7 +96,7 @@ import { toKhNumber } from "./libs/toKh";
 import {textS} from './libs/texts'
 export default {
   name: "app",
-  data() {
+  data() { // also equal variable but also can be used on html
     return {
       placeDict: placeDict,
       personDict: personDict,
@@ -107,8 +108,7 @@ export default {
       valid: false,
       loading: false,
       formData: {
-        article:
-          "លោក ប៉ែនសុធី គុយទាវឆា លោកស្រី ពិនលក្ខណា មន្ទីរ សេដ្ឋកិច្ច ក្រសួង សាធារណការ សត្វស្វា លោក ប៉ែនសុធី",
+        article:textS,
         personName: true,
         placeName: true
       },
@@ -149,7 +149,7 @@ export default {
                   isFound = true;
                 }
               });
-
+//persname ? true : false if(){}else{}
               this.personDict.map(p => {
                 //loop person
                 if (o === p) {
