@@ -15,13 +15,14 @@
 
 import {placeDict} from './libs/placeDict';
 import {personDict} from './libs/personDict';
+import {textS} from './libs/texts'
 export default {
   name: 'app',
   data(){
     return {
       placeDict: placeDict,
       personDict: personDict,
-      data: ["លោក", "ប៉ែនសុធី", "គុយទាវឆា", "លោកស្រី ពិនលក្ខណា", "មន្ទីរ សេដ្ឋកិច្ច", "ក្រសួង សាធារណការ", "សត្វស្វា"],
+      data: textS,
       foundResult: [{style: '', text: ''}],
       isFound: false,
     }
@@ -32,7 +33,9 @@ export default {
         
         this.placeDict.map(p => {//loop place
           if(o ===  p) {
+            this.foundResult.push({text: this.data[index]});
             this.foundResult.push({bg: "yellow", text: this.data[index+1]});
+            
             this.isFound=true;
           }
         });
@@ -40,7 +43,9 @@ export default {
 
         this.personDict.map(p => {
           if(o ===  p) {
-            this.foundResult.push({bg: "green", text: this.data[index+1]});
+            this.foundResult.push({text: this.data[index]});
+            this.foundResult.push({bg: "lightgreen", text: this.data[index+1]});
+            
             this.isFound=true;
           }
         });
