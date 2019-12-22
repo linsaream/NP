@@ -1,4 +1,5 @@
 <template>
+
   <v-app>
     <v-layout row justify-center align-center fill-height>
       <v-card width="900" :elevation="24">
@@ -24,7 +25,7 @@
                   counter
                 ></v-textarea>
               </v-flex>
-              <div class="mx-5">
+              <div class="mx-5" >
                 <v-switch
                   label="ឈ្មោះមនុស្ស"
                   inset
@@ -83,6 +84,7 @@
       </v-card>
     </v-layout>
   </v-app>
+  
 </template>
 
 <script>

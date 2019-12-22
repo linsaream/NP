@@ -24,7 +24,7 @@ const color ={
 Vue.use(Vuetify);//register applicaton with vuetify module /package
 const vuetify = new Vuetify({
   theme: {
-    dark: true,
+    dark: false,
     themes: {
       light: color,
       dark: color,
