@@ -91,6 +91,7 @@
 
 /* eslint-disable */
 import {article} from "./libs/article";
+import {nameUse} from "./libs/namesUse";
 import { placeDict } from "./libs/placeDict";
 import { personDict } from "./libs/personDict";
 import { toKhNumber } from "./libs/toKh";
@@ -152,18 +153,23 @@ export default {
                 }
               });
 //persname ? true : false if(){}else{}
+              
+
               this.personDict.map(p => {
                 //loop person
                 if (o === p) {
                   //compare value in artical o === person
                   result.push(
                     { text: o }, //push title
-                    { type: personName ? "person" : "", text: arr[index + 1] } //push person
+                    { type: personName ? "person" : "", text: arr[index+1] } //push person
                   );
                   this.total.person += 1;
                   isFound = true;
                 }
               });
+
+              
+
 
               if (!isFound) {
                 if (result[index] && o === result[index].text) {
