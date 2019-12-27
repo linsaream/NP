@@ -1,5 +1,4 @@
 <template>
-
   <v-app>
     <v-navigation-drawer app v-model="drawer" floating fixed>
       <template v-slot:prepend>
@@ -92,7 +91,7 @@
                   <div v-for="(item, index) in foundResult" :key="item.text+index">
                     <v-chip
                       label
-                      :color="item.type=='place'? 'warning': 'error'"
+                      :color="item.type=='place'? 'warning': item.type == 'person'? 'error': 'gray'"
                       class="mr-1"
                       v-if="!!item.type"
                     >{{item.text}}</v-chip>
@@ -125,11 +124,14 @@
       </v-card>
     </v-dialog>
   </v-app>
-  
 </template>
 
 <script>
 /* eslint-disable */
+import dict from "./assets/dict.txt";
+const dictionary = dict.split("\n").map(item => item.trim());
+
+import _ from "lodash";
 import { article } from "./libs/article";
 import { placeDict } from "./libs/placeDict";
 import { personDict } from "./libs/personDict";
@@ -145,6 +147,8 @@ export default {
       drawer: this.$vuetify.breakpoint.mdAndUp ? true : false,
       placeDict: placeDict,
       personDict: personDict,
+      places: [],
+      people: [],
       foundResult: [],
       total: {
         place: 0,
@@ -153,7 +157,8 @@ export default {
       valid: false,
       loading: false,
       formData: {
-        article: textS,
+        article:
+          "លោក សារៀម ទៅ លេង ខេត្ត ពោធិ៍សាត់ ។ សារៀម ចូល ចិត្ត ស្រី ៗ នៅ ពោធិ៍សាត់ ជា ច្រើន",
         personName: true,
         placeName: true
       },
@@ -172,72 +177,163 @@ export default {
       if (this.$refs.form.validate()) {
         this.reset();
         this.loading = true;
-        setTimeout(() => {
-          const { article, placeName, personName } = this.formData;
-          let result = [];
-          let isFound = false;
-          if (article) {
-            let arr = article.split(" ");
+        // setTimeout(() => {
+        const { article, placeName, personName } = this.formData;
 
-            arr.map((o, index) => {
-              //data from user separate from " "
+        let result = [];
+        let isFound = false;
+        if (article) {
+          let arr = article.split(" ").map(item => item.trim());
 
-              this.placeDict.map(p => {
-                //loop place
-                if (o === p) {
-                  //compare value in artical o === place
-                  result.push(
-                    { text: o }, //push title
-                    { type: placeName ? "place" : "", text: arr[index + 1] } //push place
-                  );
+          for (const [index, o] of arr.entries()) {
+            //data from user separate from " "
+            if (_.includes(this.placeDict, o)) {
+              result.push(
+                { text: o }, //push title
+                { type: placeName ? "place" : "", text: arr[index + 1] } //push place
+              );
+              this.places.push(arr[index + 1]);
+              this.places = [...new Set(this.places)];
+              if (placeName) {
+                this.total.place += 1;
+              }
+              isFound = true;
+            }
+            // for (let p of this.placeDict) {
+            //   if (o === p) {
+            //     //compare value in artical o === place
+            //     result.push(
+            //       { text: o }, //push title
+            //       { type: placeName ? "place" : "", text: arr[index + 1] } //push place
+            //     );
+            //     this.places.push(arr[index + 1]);
+            //     this.places = [...new Set(this.places)];
+
+            //     if (placeName) {
+            //       this.total.place += 1;
+            //     }
+            //     isFound = true;
+            //     break;
+            //   }
+            // }
+            //learn word place
+            if (result[index] && o === result[index].text) {
+            } else {
+              if (!isFound) {
+                if (_.includes(this.places, o)) {
+                  result.push({ type: placeName ? "place" : "", text: o });
                   if (placeName) {
                     this.total.place += 1;
                   }
                   isFound = true;
                 }
-              });
-              //persname ? true : false if(){}else{}
-              this.personDict.map(p => {
-                //loop person
-                if (o === p) {
-                  //compare value in artical o === person
-                  result.push(
-                    { text: o }, //push title
-                    { type: personName ? "person" : "", text: arr[index+1] } //push person
-                  );
+              }
+            }
+
+            // if (result[index] && o === result[index].text) {
+            // } else {
+            //   if (!isFound) {
+            //     for (let p of this.places) {
+            //       if (o === p) {
+            //         result.push({ type: placeName ? "place" : "", text: o });
+            //         if (placeName) {
+            //           this.total.place += 1;
+            //         }
+            //         isFound = true;
+            //         break;
+            //       }
+            //     }
+            //   }
+            // }
+
+            //persname ? true : false if(){}else{}
+            if (!isFound) {
+              if (_.includes(this.personDict, o)) {
+                result.push(
+                  { text: o }, //push title
+                  { type: personName ? "person" : "", text: arr[index + 1] } //push person
+                );
+                this.people.push(arr[index + 1]);
+                this.people = [...new Set(this.people)];
+
+                if (personName) {
+                  this.total.person += 1;
+                }
+                isFound = true;
+              }
+
+              // for (let p of this.personDict) {
+              //   //loop person
+              //   if (o === p) {
+              //     //compare value in artical o === person
+              //     result.push(
+              //       { text: o }, //push title
+              //       { type: personName ? "person" : "", text: arr[index + 1] } //push person
+              //     );
+              //     this.people.push(arr[index + 1]);
+              //     this.people = [...new Set(this.people)];
+
+              //     if (personName) {
+              //       this.total.person += 1;
+              //     }
+              //     isFound = true;
+              //     break;
+              //   }
+              // }
+            }
+            if (result[index] && o === result[index].text) {
+            } else {
+              if (!isFound) {
+                //learn word person
+
+                if (_.includes(this.people, o)) {
+                  result.push({ type: personName ? "person" : "", text: o });
                   if (personName) {
                     this.total.person += 1;
                   }
                   isFound = true;
                 }
-              });
 
-              
-
-
-              if (!isFound) {
-                if (result[index] && o === result[index].text) {
-                } else {
-                  result.push({ text: o });
-                }
-                // console.log(o,result[index])
-
-                // if(result[index] && o===result[index].text){
-                // result.splice(index, index+1)
-                // }
-                // console.log(o, result[index])
-
+                // for (let p of this.people) {
+                //   if (o === p) {
+                //     result.push({ type: personName ? "person" : "", text: o });
+                //     if (personName) {
+                //       this.total.person += 1;
+                //     }
+                //     isFound = true;
+                //     break;
+                //   }
                 // }
               }
-              isFound = false;
-            });
-            this.foundResult = result;
-          } else {
-            result = [];
-            this.foundResult = [];
+            }
+            if (!isFound) {
+              if (!_.includes(dictionary, o)) {
+                //not in dictionary
+                if (result[index] && o === result[index].text) {
+                } else {
+                  result.push({ type: "unknown", text: o });
+                  isFound = true;
+                }
+              }
+            }
+
+            if (!isFound) {
+              if (result[index] && o === result[index].text) {
+              } else {
+                result.push({ text: o });
+              }
+            }
+            isFound = false;
           }
-          this.loading = false;
-        }, 500);
+
+          this.foundResult = result;
+        } else {
+          result = [];
+          this.foundResult = [];
+        }
+        this.loading = false;
+        // }, 500);
+        // _.includes(dictionary, "សកល")
       }
     },
     khNumber(enNum) {
