@@ -5,14 +5,14 @@
         <v-list>
           <v-list-item>
             <v-list-item-avatar>
-              <img src="./assets/avatar.png" />
+              <img src="./assets/avatar1.png" />
             </v-list-item-avatar>
           </v-list-item>
 
           <v-list-item link two-line>
             <v-list-item-content>
               <v-list-item-title class="title">LIN SAREAM</v-list-item-title>
-              <v-list-item-subtitle>sandra_a88@gmail.com</v-list-item-subtitle>
+              <v-list-item-subtitle>linsaream@gmail.com</v-list-item-subtitle>
             </v-list-item-content>
             <v-list-item-action>
               <v-icon>mdi-menu-down</v-icon>
@@ -115,7 +115,8 @@
     <v-dialog v-model="dialog" width="500">
       <v-card>
         <v-card-title class="headline success" primary-title>អំពីខ្ញុំ</v-card-title>
-        <v-card-text>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sd do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</v-card-text>
+        <v-card-text>ខ្ញុំបាទ <b>លិន សារាម</b> សូមបញ្ជាក់ថារបាយការណ៍ស្រាវជ្រាវ ដែលមានចំណងជើងថា
+<b>ការសិក្សាលើប្រព័ន្ធស្វែងរកឈ្មោះមនុស្ស និងឈ្មោះទីកន្លែង</b> សម្រាប់បំពេញលក្ខខណ្ឌយកសញ្ញាបត្របរិញ្ញាបត្រជាន់ខ្ពស់ផ្នែកព័ត៌មានវិទ្យា នៅសាកលវិទ្យាល័យភូមិន្ទភ្នំពេញ គឺជាស្នាដៃរបស់ខ្ញុំបាទទាំងស្រុង។ ស្នាដៃនេះពុំទាន់ត្រូវបានប្រើប្រាស់ដើម្បីបំពេញលក្ខខណ្ឌសិក្សា សម្រាប់យក សញ្ញាបត្រនៅសាកលវិទ្យាល័យនេះ ឬសាកលវិទ្យាល័យណា ឬវិទ្យាស្ថានថ្នាក់ស្មើ ណាមួយនៅឡើយទេ។</v-card-text>
         <v-divider></v-divider>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -128,8 +129,8 @@
 
 <script>
 /* eslint-disable */
-import dict from "./assets/dict.txt";
-const dictionary = dict.split("\n").map(item => item.trim());
+//import dict from "./assets/dict.txt";
+//const dictionary = dict.split("\n").map(item => item.trim());
 
 import _ from "lodash";
 import { article } from "./libs/article";
@@ -157,8 +158,7 @@ export default {
       valid: false,
       loading: false,
       formData: {
-        article:
-          "លោក សារៀម ទៅ លេង ខេត្ត ពោធិ៍សាត់ ។ សារៀម ចូល ចិត្ត ស្រី ៗ នៅ ពោធិ៍សាត់ ជា ច្រើន",
+        article:article,
         personName: true,
         placeName: true
       },
@@ -183,7 +183,8 @@ export default {
         let result = [];
         let isFound = false;
         if (article) {
-          let arr = article.split(" ").map(item => item.trim());
+          //let arr = article.split(" ").map(item => item.trimLeft().trimRight());
+          let arr = article.replace(/\u200b/g,' ').split(" ").filter(item => item.trim());//replace(/ /g,' ').
 
           for (const [index, o] of arr.entries()) {
             //data from user separate from " "
@@ -251,9 +252,13 @@ export default {
               if (_.includes(this.personDict, o)) {
                 result.push(
                   { text: o }, //push title
-                  { type: personName ? "person" : "", text: arr[index + 1] } //push person
+                  { type: personName ? "person" : "", text: arr[index + 1]},
+                  { type: personName ? "person" : "", text: arr[index + 2]}
+                   //push person
                 );
+                
                 this.people.push(arr[index + 1]);
+                this.people.push(arr[index + 2]);
                 this.people = [...new Set(this.people)];
 
                 if (personName) {
@@ -306,16 +311,16 @@ export default {
                 // }
               }
             }
-            if (!isFound) {
-              if (!_.includes(dictionary, o)) {
-                //not in dictionary
-                if (result[index] && o === result[index].text) {
-                } else {
-                  result.push({ type: "unknown", text: o });
-                  isFound = true;
-                }
-              }
-            }
+            // if (!isFound) {
+            //   if (!_.includes(dictionary, o)) {
+            //     //not in dictionary
+            //     if (result[index] && o === result[index].text) {
+            //     } else {
+            //       result.push({ type: "unknown", text: o });
+            //       isFound = true;
+            //     }
+            //   }
+            // }
 
             if (!isFound) {
               if (result[index] && o === result[index].text) {
