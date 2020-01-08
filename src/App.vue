@@ -75,6 +75,15 @@
                       class="mt-5"
                     >
                       <v-icon left>search</v-icon>ស្វែងរក
+                    </v-btn><br>
+                    <v-btn
+                      color="info"
+                      @click="matchDataWithDict"
+                      :disabled="!valid"
+                      :loading="loading"
+                      class="mt-5"
+                    >
+                      <v-icon left>save</v-icon>រក្សាទុកឈ្មោះ
                     </v-btn>
                   </div>
                 </v-layout>
