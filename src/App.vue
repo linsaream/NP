@@ -37,7 +37,7 @@
     <v-content>
       <v-container fluid>
         <v-fade-transition mode="out-in">
-          <v-card outlined>
+          <v-card outlined :loading="placesDb.length===0 || peopleDb.length===0">
             <v-card-text class="ma-2">
               <v-form ref="form" v-model="valid" lazy-validation>
                 <v-layout row wrap>
@@ -75,15 +75,15 @@
                       class="mt-5"
                     >
                       <v-icon left>search</v-icon>ស្វែងរក
-                    </v-btn><br>
+                    </v-btn>
+                    <br />
                     <v-btn
-                      color="info"
-                      @click="matchDataWithDict"
-                      :disabled="!valid"
-                      :loading="loading"
+                      color="success"
+                      @click="reloadDb"
                       class="mt-5"
+                      :loading="connectLoading"
                     >
-                      <v-icon left>save</v-icon>រក្សាទុកឈ្មោះ
+                      <v-icon left>refresh</v-icon>reload db
                     </v-btn>
                   </div>
                 </v-layout>
@@ -99,6 +99,7 @@
                 <v-layout row align-center class="mx-1">
                   <div v-for="(item, index) in foundResult" :key="item.text+index">
                     <v-chip
+                      @click="item.type=='place'? saveText('places', item.text): saveText('people', item.text)"
                       label
                       :color="item.type=='place'? 'warning': item.type == 'person'? 'error': 'gray'"
                       class="mr-1"
@@ -123,9 +124,12 @@
     </v-content>
     <v-dialog v-model="dialog" width="500">
       <v-card>
-        <v-card-title class="headline success" primary-title>អំពីខ្ញុំ</v-card-title>
-        <v-card-text>ខ្ញុំបាទ <b>លិន សារាម</b> សូមបញ្ជាក់ថារបាយការណ៍ស្រាវជ្រាវ ដែលមានចំណងជើងថា
-<b>ការសិក្សាលើប្រព័ន្ធស្វែងរកឈ្មោះមនុស្ស និងឈ្មោះទីកន្លែង</b> សម្រាប់បំពេញលក្ខខណ្ឌយកសញ្ញាបត្របរិញ្ញាបត្រជាន់ខ្ពស់ផ្នែកព័ត៌មានវិទ្យា នៅសាកលវិទ្យាល័យភូមិន្ទភ្នំពេញ គឺជាស្នាដៃរបស់ខ្ញុំបាទទាំងស្រុង។ ស្នាដៃនេះពុំទាន់ត្រូវបានប្រើប្រាស់ដើម្បីបំពេញលក្ខខណ្ឌសិក្សា សម្រាប់យក សញ្ញាបត្រនៅសាកលវិទ្យាល័យនេះ ឬសាកលវិទ្យាល័យណា ឬវិទ្យាស្ថានថ្នាក់ស្មើ ណាមួយនៅឡើយទេ។</v-card-text>
+        <v-card-title class="headline success white--text mb-3" primary-title>អំពីខ្ញុំ</v-card-title>
+        <v-card-text>
+          ខ្ញុំបាទ
+          <b>លិន សារាម</b> សូមបញ្ជាក់ថារបាយការណ៍ស្រាវជ្រាវ ដែលមានចំណងជើងថា
+          <b>ការសិក្សាលើប្រព័ន្ធស្វែងរកឈ្មោះមនុស្ស និងឈ្មោះទីកន្លែង</b> សម្រាប់បំពេញលក្ខខណ្ឌយកសញ្ញាបត្របរិញ្ញាបត្រជាន់ខ្ពស់ផ្នែកព័ត៌មានវិទ្យា នៅសាកលវិទ្យាល័យភូមិន្ទភ្នំពេញ គឺជាស្នាដៃរបស់ខ្ញុំបាទទាំងស្រុង។ ស្នាដៃនេះពុំទាន់ត្រូវបានប្រើប្រាស់ដើម្បីបំពេញលក្ខខណ្ឌសិក្សា សម្រាប់យក សញ្ញាបត្រនៅសាកលវិទ្យាល័យនេះ ឬសាកលវិទ្យាល័យណា ឬវិទ្យាស្ថានថ្នាក់ស្មើ ណាមួយនៅឡើយទេ។
+        </v-card-text>
         <v-divider></v-divider>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -133,6 +137,15 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-snackbar v-model="snackbar.visible" :color="snackbar.color">{{ snackbar.text }}</v-snackbar>
+    <confirm-dialog
+      :visible="confirmDialog.visible"
+      @confirm="confirmDialog.confirmFn"
+      @close="confirmDialog.visible=false"
+      :title="confirmDialog.title"
+      :type="confirmDialog.type"
+      :text="confirmDialog.text"
+    />
   </v-app>
 </template>
 
@@ -140,7 +153,8 @@
 /* eslint-disable */
 //import dict from "./assets/dict.txt";
 //const dictionary = dict.split("\n").map(item => item.trim());
-
+import firebase from "./firebase/config";
+import ConfirmDialog from "./components/ConfirmDialog";
 import _ from "lodash";
 import { article } from "./libs/article";
 import { placeDict } from "./libs/placeDict";
@@ -150,6 +164,7 @@ import { toKhNumber } from "./libs/toKh";
 import { textS } from "./libs/texts";
 export default {
   name: "app",
+  components: { ConfirmDialog },
   data() {
     // also equal variable but also can be used on html
     return {
@@ -157,6 +172,8 @@ export default {
       drawer: this.$vuetify.breakpoint.mdAndUp ? true : false,
       placeDict: placeDict,
       personDict: personDict,
+      placesDb: [],
+      peopleDb: [],
       places: [],
       people: [],
       foundResult: [],
@@ -166,13 +183,27 @@ export default {
       },
       valid: false,
       loading: false,
+      connectLoading: false,
       formData: {
-        article:article,
+        // article: "បាត់ដំបង",
+        article: article,
         personName: true,
         placeName: true
       },
       rules: {
         article: [v => !!v || "តម្រូវបញ្ចូល អត្ថបទ"]
+      },
+      snackbar: {
+        visible: false,
+        color: "",
+        text: ""
+      },
+      confirmDialog: {
+        type: "error",
+        visible: false,
+        text: "",
+        title: "",
+        confirmFn: () => null
       }
     };
   },
@@ -182,181 +213,245 @@ export default {
       this.total.place = 0;
       this.total.person = 0;
     },
+    reloadDb() {
+      this.connectLoading = true;
+      setTimeout(() => {
+        this.findPlaces();
+        this.findPeople();
+        this.connectLoading = false;
+      }, 350);
+    },
+    successMsg() {
+      this.snackbar.visible = true;
+      this.snackbar.color = "success";
+      this.snackbar.text = "កត់ត្រាជោគជ័យ";
+    },
+    errorMsg(text) {
+      this.snackbar.visible = true;
+      this.snackbar.color = "error";
+      this.snackbar.text = "កំហុស" + " " + text;
+    },
+    saveText(collection, text) {
+      this.confirmDialog = {
+        type: "error",
+        visible: true,
+        title: "បញ្ជាក់",
+        text: `តើអ្នកពិតជាចង់បញ្ចូលពាក្យនេះ ${text} ទៅកាន់ database?`,
+        confirmFn: () => {
+          this.insertToFirestore(
+            collection,
+            text,
+            res => {
+              this.successMsg();
+              this.reloadDb();
+            },
+            err => {
+              this.errorMsg(err);
+            }
+          );
+        }
+      };
+    },
+    findPlaces() {
+      firebase.db
+        .collection("places")
+        .get()
+        .then(querySnapshot => {
+          querySnapshot.forEach(doc => {
+            this.placesDb.push(doc.data().name);
+            this.placesDb = [...new Set(this.placesDb)];
+          });
+        });
+    },
+    findPeople() {
+      firebase.db
+        .collection("people")
+        .get()
+        .then(querySnapshot => {
+          querySnapshot.forEach(doc => {
+            this.peopleDb.push(doc.data().name);
+            this.peopleDb = [...new Set(this.peopleDb)];
+          });
+        });
+    },
+    insertToFirestore(collectionName, value, successCallBack, errorCallBack) {
+      firebase.db
+        .collection(collectionName)
+        .add({ name: value })
+        .then(function(docRef) {
+          successCallBack(docRef.id);
+        })
+        .catch(function(error) {
+          errorCallBack(error);
+        });
+    },
     matchDataWithDict() {
       if (this.$refs.form.validate()) {
         this.reset();
         this.loading = true;
-        // setTimeout(() => {
-        const { article, placeName, personName } = this.formData;
+        setTimeout(() => {
+          const { article, placeName, personName } = this.formData;
 
-        let result = [];
-        let isFound = false;
-        if (article) {
-          //let arr = article.split(" ").map(item => item.trimLeft().trimRight());
-          let arr = article.replace(/\u200b/g,' ').split(" ").filter(item => item.trim());//replace(/ /g,' ').
+          let result = [];
+          let isFound = false;
+          if (article) {
+            //let arr = article.split(" ").map(item => item.trimLeft().trimRight());
+            let arr = article
+              .replace(/\u200b/g, " ")
+              .split(" ")
+              .filter(item => item.trim()); //replace(/ /g,' ').
 
-          for (const [index, o] of arr.entries()) {
-            //data from user separate from " "
-            if (_.includes(this.placeDict, o)) {
-              result.push(
-                { text: o }, //push title
-                { type: placeName ? "place" : "", text: arr[index + 1] } //push place
-              );
-              this.places.push(arr[index + 1]);
-              this.places = [...new Set(this.places)];
-              if (placeName) {
-                this.total.place += 1;
-              }
-              isFound = true;
-            }
-            // for (let p of this.placeDict) {
-            //   if (o === p) {
-            //     //compare value in artical o === place
-            //     result.push(
-            //       { text: o }, //push title
-            //       { type: placeName ? "place" : "", text: arr[index + 1] } //push place
-            //     );
-            //     this.places.push(arr[index + 1]);
-            //     this.places = [...new Set(this.places)];
-
-            //     if (placeName) {
-            //       this.total.place += 1;
-            //     }
-            //     isFound = true;
-            //     break;
-            //   }
-            // }
-            //learn word place
-            if (result[index] && o === result[index].text) {
-            } else {
-              if (!isFound) {
-                if (_.includes(this.places, o)) {
-                  result.push({ type: placeName ? "place" : "", text: o });
+            for (const [index, o] of arr.entries()) {
+              //data from user separate from " "
+              //place from db
+              if (result[index] && o === result[index].text) {
+              } else {
+                if (_.includes(this.placesDb, o)) {
+                  result.push({
+                    type: placeName ? "place" : "",
+                    text: arr[index],
+                    ref: "place_db"
+                  });
                   if (placeName) {
                     this.total.place += 1;
                   }
                   isFound = true;
                 }
               }
-            }
-
-            // if (result[index] && o === result[index].text) {
-            // } else {
-            //   if (!isFound) {
-            //     for (let p of this.places) {
-            //       if (o === p) {
-            //         result.push({ type: placeName ? "place" : "", text: o });
-            //         if (placeName) {
-            //           this.total.place += 1;
-            //         }
-            //         isFound = true;
-            //         break;
-            //       }
-            //     }
-            //   }
-            // }
-
-            //persname ? true : false if(){}else{}
-            if (!isFound) {
-              if (_.includes(this.personDict, o)) {
-                result.push(
-                  { text: o }, //push title
-                  { type: personName ? "person" : "", text: arr[index + 1]},
-                  { type: personName ? "person" : "", text: arr[index + 2]}
-                   //push person
-                );
-                
-                this.people.push(arr[index + 1]);
-                this.people.push(arr[index + 2]);
-                this.people = [...new Set(this.people)];
-
-                if (personName) {
-                  this.total.person += 1;
+              //place with prefix
+              if (!isFound) {
+                if (result[index] && o === result[index].text) {
+                } else {
+                  if (_.includes(this.placeDict, o)) {
+                    result.push(
+                      { text: o, ref: "place_prefix" }, //push title
+                      {
+                        type: placeName ? "place" : "",
+                        text: arr[index + 1],
+                        ref: "place_prefix"
+                      } //push place
+                    );
+                    this.places.push(arr[index + 1]);
+                    this.places = [...new Set(this.places)];
+                    if (placeName) {
+                      this.total.place += 1;
+                    }
+                    isFound = true;
+                  }
                 }
-                isFound = true;
               }
 
-              // for (let p of this.personDict) {
-              //   //loop person
-              //   if (o === p) {
-              //     //compare value in artical o === person
-              //     result.push(
-              //       { text: o }, //push title
-              //       { type: personName ? "person" : "", text: arr[index + 1] } //push person
-              //     );
-              //     this.people.push(arr[index + 1]);
-              //     this.people = [...new Set(this.people)];
-
-              //     if (personName) {
-              //       this.total.person += 1;
-              //     }
-              //     isFound = true;
-              //     break;
-              //   }
-              // }
-            }
-            if (result[index] && o === result[index].text) {
-            } else {
+              //learn word place
               if (!isFound) {
-                //learn word person
+                if (result[index] && o === result[index].text) {
+                } else {
+                  if (_.includes(this.places, o)) {
+                    result.push({
+                      type: placeName ? "place" : "",
+                      text: o,
+                      ref: "learn_place"
+                    });
+                    if (placeName) {
+                      this.total.place += 1;
+                    }
+                    isFound = true;
+                  }
+                }
+              }
 
-                if (_.includes(this.people, o)) {
-                  result.push({ type: personName ? "person" : "", text: o });
+              //people from db
+              if (!isFound) {
+                if (result[index] && o === result[index].text) {
+                } else {
+                  if (_.includes(this.peopleDb, o)) {
+                    result.push({
+                      type: personName ? "person" : "",
+                      text: arr[index],
+                      ref: "people_db"
+                    });
+                    if (personName) {
+                      this.total.person += 1;
+                    }
+                    isFound = true;
+                  }
+                }
+              }
+
+              //persname ? true : false if(){}else{}
+              if (!isFound) {
+                if (_.includes(this.personDict, o)) {
+                  result.push(
+                    { text: o, ref: "person_prefix" }, //push title
+                    {
+                      type: personName ? "person" : "",
+                      text: arr[index + 1],
+                      ref: "person_prefix"
+                    },
+                    {
+                      type: personName ? "person" : "",
+                      text: arr[index + 2],
+                      ref: "person_prefix"
+                    }
+                    //push person
+                  );
+
+                  this.people.push(arr[index + 1]);
+                  this.people.push(arr[index + 2]);
+                  this.people = [...new Set(this.people)];
+
                   if (personName) {
                     this.total.person += 1;
                   }
                   isFound = true;
                 }
-
-                // for (let p of this.people) {
-                //   if (o === p) {
-                //     result.push({ type: personName ? "person" : "", text: o });
-                //     if (personName) {
-                //       this.total.person += 1;
-                //     }
-                //     isFound = true;
-                //     break;
-                //   }
-                // }
               }
-            }
-            // if (!isFound) {
-            //   if (!_.includes(dictionary, o)) {
-            //     //not in dictionary
-            //     if (result[index] && o === result[index].text) {
-            //     } else {
-            //       result.push({ type: "unknown", text: o });
-            //       isFound = true;
-            //     }
-            //   }
-            // }
-
-            if (!isFound) {
+              //learn word person
               if (result[index] && o === result[index].text) {
               } else {
-                result.push({ text: o });
+                if (!isFound) {
+                  if (_.includes(this.people, o)) {
+                    result.push({
+                      type: personName ? "person" : "",
+                      text: o,
+                      ref: "learn_person"
+                    });
+                    if (personName) {
+                      this.total.person += 1;
+                    }
+                    isFound = true;
+                  }
+                }
               }
-            }
-            isFound = false;
-          }
 
-          this.foundResult = result;
-        } else {
-          result = [];
-          this.foundResult = [];
-        }
-        this.loading = false;
-        // }, 500);
-        // _.includes(dictionary, "សកល")
+              if (!isFound) {
+                if (result[index] && o === result[index].text) {
+                } else {
+                  result.push({ text: o, ref: "nothing" });
+                }
+              }
+              isFound = false;
+            }
+
+            this.foundResult = result;
+          } else {
+            result = [];
+            this.foundResult = [];
+          }
+          this.loading = false;
+        }, 200);
       }
     },
     khNumber(enNum) {
       return toKhNumber(enNum + "");
     },
     displayAbout() {
-      this.drawer = false;
+      this.drawer = !!this.$vuetify.breakpoint.mdAndUp;
       this.dialog = true;
     }
+  },
+  created() {
+    this.findPlaces();
+    this.findPeople();
   }
 };
 </script>
