@@ -75,12 +75,12 @@
                       class="mt-5"
                     >
                       <v-icon left>search</v-icon>ស្វែងរក
-                    </v-btn><br>
+                    </v-btn>
+                    <br />
                     <v-btn
                       color="info"
                       @click="matchDataWithDict"
-                      :disabled="!valid"
-                      :loading="loading"
+                      :disabled="places.length===0 || people.length===0"
                       class="mt-5"
                     >
                       <v-icon left>save</v-icon>រក្សាទុកឈ្មោះ
@@ -123,9 +123,12 @@
     </v-content>
     <v-dialog v-model="dialog" width="500">
       <v-card>
-        <v-card-title class="headline success" primary-title>អំពីខ្ញុំ</v-card-title>
-        <v-card-text>ខ្ញុំបាទ <b>លិន សារាម</b> សូមបញ្ជាក់ថារបាយការណ៍ស្រាវជ្រាវ ដែលមានចំណងជើងថា
-<b>ការសិក្សាលើប្រព័ន្ធស្វែងរកឈ្មោះមនុស្ស និងឈ្មោះទីកន្លែង</b> សម្រាប់បំពេញលក្ខខណ្ឌយកសញ្ញាបត្របរិញ្ញាបត្រជាន់ខ្ពស់ផ្នែកព័ត៌មានវិទ្យា នៅសាកលវិទ្យាល័យភូមិន្ទភ្នំពេញ គឺជាស្នាដៃរបស់ខ្ញុំបាទទាំងស្រុង។ ស្នាដៃនេះពុំទាន់ត្រូវបានប្រើប្រាស់ដើម្បីបំពេញលក្ខខណ្ឌសិក្សា សម្រាប់យក សញ្ញាបត្រនៅសាកលវិទ្យាល័យនេះ ឬសាកលវិទ្យាល័យណា ឬវិទ្យាស្ថានថ្នាក់ស្មើ ណាមួយនៅឡើយទេ។</v-card-text>
+        <v-card-title class="headline success white--text mb-3" primary-title>អំពីខ្ញុំ</v-card-title>
+        <v-card-text>
+          ខ្ញុំបាទ
+          <b>លិន សារាម</b> សូមបញ្ជាក់ថារបាយការណ៍ស្រាវជ្រាវ ដែលមានចំណងជើងថា
+          <b>ការសិក្សាលើប្រព័ន្ធស្វែងរកឈ្មោះមនុស្ស និងឈ្មោះទីកន្លែង</b> សម្រាប់បំពេញលក្ខខណ្ឌយកសញ្ញាបត្របរិញ្ញាបត្រជាន់ខ្ពស់ផ្នែកព័ត៌មានវិទ្យា នៅសាកលវិទ្យាល័យភូមិន្ទភ្នំពេញ គឺជាស្នាដៃរបស់ខ្ញុំបាទទាំងស្រុង។ ស្នាដៃនេះពុំទាន់ត្រូវបានប្រើប្រាស់ដើម្បីបំពេញលក្ខខណ្ឌសិក្សា សម្រាប់យក សញ្ញាបត្រនៅសាកលវិទ្យាល័យនេះ ឬសាកលវិទ្យាល័យណា ឬវិទ្យាស្ថានថ្នាក់ស្មើ ណាមួយនៅឡើយទេ។
+        </v-card-text>
         <v-divider></v-divider>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -167,7 +170,7 @@ export default {
       valid: false,
       loading: false,
       formData: {
-        article:article,
+        article: article,
         personName: true,
         placeName: true
       },
@@ -186,175 +189,105 @@ export default {
       if (this.$refs.form.validate()) {
         this.reset();
         this.loading = true;
-        // setTimeout(() => {
-        const { article, placeName, personName } = this.formData;
+        setTimeout(() => {
+          const { article, placeName, personName } = this.formData;
 
-        let result = [];
-        let isFound = false;
-        if (article) {
-          //let arr = article.split(" ").map(item => item.trimLeft().trimRight());
-          let arr = article.replace(/\u200b/g,' ').split(" ").filter(item => item.trim());//replace(/ /g,' ').
+          let result = [];
+          let isFound = false;
+          if (article) {
+            //let arr = article.split(" ").map(item => item.trimLeft().trimRight());
+            let arr = article
+              .replace(/\u200b/g, " ")
+              .split(" ")
+              .filter(item => item.trim()); //replace(/ /g,' ').
 
-          for (const [index, o] of arr.entries()) {
-            //data from user separate from " "
-            if (_.includes(this.placeDict, o)) {
-              result.push(
-                { text: o }, //push title
-                { type: placeName ? "place" : "", text: arr[index + 1] } //push place
-              );
-              this.places.push(arr[index + 1]);
-              this.places = [...new Set(this.places)];
-              if (placeName) {
-                this.total.place += 1;
-              }
-              isFound = true;
-            }
-            // for (let p of this.placeDict) {
-            //   if (o === p) {
-            //     //compare value in artical o === place
-            //     result.push(
-            //       { text: o }, //push title
-            //       { type: placeName ? "place" : "", text: arr[index + 1] } //push place
-            //     );
-            //     this.places.push(arr[index + 1]);
-            //     this.places = [...new Set(this.places)];
-
-            //     if (placeName) {
-            //       this.total.place += 1;
-            //     }
-            //     isFound = true;
-            //     break;
-            //   }
-            // }
-            //learn word place
-            if (result[index] && o === result[index].text) {
-            } else {
-              if (!isFound) {
-                if (_.includes(this.places, o)) {
-                  result.push({ type: placeName ? "place" : "", text: o });
-                  if (placeName) {
-                    this.total.place += 1;
-                  }
-                  isFound = true;
-                }
-              }
-            }
-
-            // if (result[index] && o === result[index].text) {
-            // } else {
-            //   if (!isFound) {
-            //     for (let p of this.places) {
-            //       if (o === p) {
-            //         result.push({ type: placeName ? "place" : "", text: o });
-            //         if (placeName) {
-            //           this.total.place += 1;
-            //         }
-            //         isFound = true;
-            //         break;
-            //       }
-            //     }
-            //   }
-            // }
-
-            //persname ? true : false if(){}else{}
-            if (!isFound) {
-              if (_.includes(this.personDict, o)) {
+            for (const [index, o] of arr.entries()) {
+              //data from user separate from " "
+              if (_.includes(this.placeDict, o)) {
                 result.push(
                   { text: o }, //push title
-                  { type: personName ? "person" : "", text: arr[index + 1]},
-                  { type: personName ? "person" : "", text: arr[index + 2]}
-                   //push person
+                  { type: placeName ? "place" : "", text: arr[index + 1] } //push place
                 );
-                
-                this.people.push(arr[index + 1]);
-                this.people.push(arr[index + 2]);
-                this.people = [...new Set(this.people)];
-
-                if (personName) {
-                  this.total.person += 1;
+                this.places.push(arr[index + 1]);
+                this.places = [...new Set(this.places)];
+                if (placeName) {
+                  this.total.place += 1;
                 }
                 isFound = true;
               }
 
-              // for (let p of this.personDict) {
-              //   //loop person
-              //   if (o === p) {
-              //     //compare value in artical o === person
-              //     result.push(
-              //       { text: o }, //push title
-              //       { type: personName ? "person" : "", text: arr[index + 1] } //push person
-              //     );
-              //     this.people.push(arr[index + 1]);
-              //     this.people = [...new Set(this.people)];
+              //learn word place
+              if (result[index] && o === result[index].text) {
+              } else {
+                if (!isFound) {
+                  if (_.includes(this.places, o)) {
+                    result.push({ type: placeName ? "place" : "", text: o });
+                    if (placeName) {
+                      this.total.place += 1;
+                    }
+                    isFound = true;
+                  }
+                }
+              }
 
-              //     if (personName) {
-              //       this.total.person += 1;
-              //     }
-              //     isFound = true;
-              //     break;
-              //   }
-              // }
-            }
-            if (result[index] && o === result[index].text) {
-            } else {
+              //persname ? true : false if(){}else{}
               if (!isFound) {
-                //learn word person
+                if (_.includes(this.personDict, o)) {
+                  result.push(
+                    { text: o }, //push title
+                    { type: personName ? "person" : "", text: arr[index + 1] },
+                    { type: personName ? "person" : "", text: arr[index + 2] }
+                    //push person
+                  );
 
-                if (_.includes(this.people, o)) {
-                  result.push({ type: personName ? "person" : "", text: o });
+                  this.people.push(arr[index + 1]);
+                  this.people.push(arr[index + 2]);
+                  this.people = [...new Set(this.people)];
+
                   if (personName) {
                     this.total.person += 1;
                   }
                   isFound = true;
                 }
-
-                // for (let p of this.people) {
-                //   if (o === p) {
-                //     result.push({ type: personName ? "person" : "", text: o });
-                //     if (personName) {
-                //       this.total.person += 1;
-                //     }
-                //     isFound = true;
-                //     break;
-                //   }
-                // }
               }
-            }
-            // if (!isFound) {
-            //   if (!_.includes(dictionary, o)) {
-            //     //not in dictionary
-            //     if (result[index] && o === result[index].text) {
-            //     } else {
-            //       result.push({ type: "unknown", text: o });
-            //       isFound = true;
-            //     }
-            //   }
-            // }
-
-            if (!isFound) {
               if (result[index] && o === result[index].text) {
               } else {
-                result.push({ text: o });
-              }
-            }
-            isFound = false;
-          }
+                if (!isFound) {
+                  //learn word person
 
-          this.foundResult = result;
-        } else {
-          result = [];
-          this.foundResult = [];
-        }
-        this.loading = false;
-        // }, 500);
-        // _.includes(dictionary, "សកល")
+                  if (_.includes(this.people, o)) {
+                    result.push({ type: personName ? "person" : "", text: o });
+                    if (personName) {
+                      this.total.person += 1;
+                    }
+                    isFound = true;
+                  }
+                }
+              }
+
+              if (!isFound) {
+                if (result[index] && o === result[index].text) {
+                } else {
+                  result.push({ text: o });
+                }
+              }
+              isFound = false;
+            }
+
+            this.foundResult = result;
+          } else {
+            result = [];
+            this.foundResult = [];
+          }
+          this.loading = false;
+        }, 200);
       }
     },
     khNumber(enNum) {
       return toKhNumber(enNum + "");
     },
     displayAbout() {
-      this.drawer = false;
+      this.drawer = !!this.$vuetify.breakpoint.mdAndUp;
       this.dialog = true;
     }
   }
