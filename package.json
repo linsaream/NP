@@ -12,7 +12,8 @@
     "lodash": "^4.17.15",
     "material-design-icons-iconfont": "^5.0.1",
     "vue": "^2.6.10",
-    "vuetify": "^2.1.15"
+    "vuetify": "^2.1.15",
+    "firebase": "^6.0.2"
   },
   "devDependencies": {
     "@mdi/font": "^4.7.95",
